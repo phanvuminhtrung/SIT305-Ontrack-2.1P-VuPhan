@@ -14,6 +14,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 public class MainActivity extends AppCompatActivity {
 
+    // UI components
     private Spinner spinnerConversionType, spinnerSourceUnit, spinnerDestinationUnit;
     private EditText editTextInput;
     private Button buttonConvert;
@@ -24,6 +25,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        // Link UI elements with their XML layout components
         spinnerConversionType = findViewById(R.id.spinnerConversionType);
         spinnerSourceUnit = findViewById(R.id.spinnerSourceUnit);
         spinnerDestinationUnit = findViewById(R.id.spinnerDestinationUnit);
@@ -31,20 +33,22 @@ public class MainActivity extends AppCompatActivity {
         buttonConvert = findViewById(R.id.buttonConvert);
         textViewResult = findViewById(R.id.textViewResult);
 
-        // Populate conversion type spinner
+        // Populate the conversion type dropdown (Length, Weight, Temperature)
         ArrayAdapter<CharSequence> typeAdapter = ArrayAdapter.createFromResource(
                 this, R.array.conversion_types, android.R.layout.simple_spinner_item);
         typeAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerConversionType.setAdapter(typeAdapter);
 
-        // Load corresponding unit spinners on type selection
+        // Set up listener to change unit options when conversion type changes
         spinnerConversionType.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int position, long id) {
+                // Set appropriate unit array based on selected conversion type
                 int unitsArrayId = R.array.length_units;
                 if (position == 1) unitsArrayId = R.array.weight_units;
                 else if (position == 2) unitsArrayId = R.array.temperature_units;
 
+                // Load source and destination units into spinners
                 ArrayAdapter<CharSequence> unitsAdapter = ArrayAdapter.createFromResource(
                         MainActivity.this, unitsArrayId, android.R.layout.simple_spinner_item);
                 unitsAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
@@ -53,22 +57,29 @@ public class MainActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onNothingSelected(AdapterView<?> adapterView) {}
+            public void onNothingSelected(AdapterView<?> adapterView) {
+                // No action needed
+            }
         });
 
+        // Perform conversion when button is clicked
         buttonConvert.setOnClickListener(view -> {
             String inputStr = editTextInput.getText().toString();
+
+            // Check if user entered a value
             if (inputStr.isEmpty()) {
                 Toast.makeText(this, "Please enter a value to convert.", Toast.LENGTH_SHORT).show();
                 return;
             }
 
             try {
+                // Parse input value and get selected options
                 double inputValue = Double.parseDouble(inputStr);
                 String type = spinnerConversionType.getSelectedItem().toString();
                 String fromUnit = spinnerSourceUnit.getSelectedItem().toString();
                 String toUnit = spinnerDestinationUnit.getSelectedItem().toString();
 
+                // Call conversion method and display result
                 double result = convert(type, fromUnit, toUnit, inputValue);
                 textViewResult.setText("Result: " + result);
             } catch (NumberFormatException e) {
@@ -77,8 +88,9 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    //Covert method
+    // Method to convert value between units based on type
     private double convert(String type, String from, String to, double value) {
+        // Handle length conversions using centimeters as base unit
         if (type.equals("Length")) {
             double cm = 0;
             if (from.equals("Inch")) cm = value * 2.54;
@@ -96,6 +108,7 @@ public class MainActivity extends AppCompatActivity {
             else return cm;
         }
 
+        // Handle weight conversions using kilograms as base unit
         if (type.equals("Weight")) {
             double kg = 0;
             if (from.equals("Pound")) kg = value * 0.453592;
@@ -111,6 +124,7 @@ public class MainActivity extends AppCompatActivity {
             else return kg;
         }
 
+        // Handle temperature conversions using Celsius as the base
         if (type.equals("Temperature")) {
             if (from.equals("Celsius")) {
                 if (to.equals("Fahrenheit")) return (value * 1.8) + 32;
@@ -129,6 +143,7 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
+        // Return 0 if type is not matched
         return 0;
     }
 }
